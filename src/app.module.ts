@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { FishModule } from './fish/fish.module';
-import { OrderModule } from './order/order.module';
-import { UserModule } from './user/user.module';
-import { AuthModule } from './auth/auth.module';
+import { FishModule } from './modules/fish/fish.module';
+import { OrderModule } from './modules/order/order.module';
+import { UserModule } from './modules/user/user.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import { UserAddressModule } from './user_address/user_address.module';
+import { UserAddressModule } from './modules/user_address/user_address.module';
 
 @Module({
   imports: [

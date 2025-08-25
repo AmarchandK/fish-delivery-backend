@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
+import { User } from 'src/entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { errorResponse, successResponse } from 'src/common/responses';
-import * as bcrypt from 'bcrypt';
-import { decrypt, encrypt } from 'src/common/crypto-helper';
 
 @Injectable()
 export class UserService {
@@ -15,13 +13,13 @@ export class UserService {
   ) {}
 
   async createUser(user: CreateUserDto) {
-    const hashedPhone = encrypt(user.phone);
     try {
       const createdUser = await this.userRepository.save({
         name: user.name,
         firebaseUid: user.firebaseUid,
-        phone: hashedPhone,
+        phone: user.phone,
         isLoggedIn: true,
+        deleteFlag: false,
       });
       return successResponse(createdUser, 'User created successfully', 201);
     } catch (error) {
@@ -35,9 +33,6 @@ export class UserService {
       const user = await this.userRepository.findOne({
         where: { firebaseUid, deleteFlag: false },
       });
-      if (user) {
-        user.phone = decrypt(user.phone);
-      }
       if (!user) {
         return errorResponse(user, 'User not found', 404);
       }

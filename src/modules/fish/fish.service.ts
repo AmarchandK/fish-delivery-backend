@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateFish } from '../entities/create_fish.entity';
+import { CreateFish } from '../../entities/create_fish.entity';
 import { Repository } from 'typeorm';
 import { CreateFishDto } from './dto/create_fish.dto';
 import { errorResponse, successResponse } from 'src/common/responses';
 import { ProductImages } from 'src/entities/product_images.entity';
+import { UpdateFishDto } from './dto/update-fish.dto';
 
 @Injectable()
 export class FishService {
@@ -22,14 +23,17 @@ export class FishService {
         price: fish.price,
         description: fish.description,
         deleteFlag: false,
+        categoryId: fish.categoryId,
       });
-      for (let i = 0; i < fish.images.length; i++) {
-        const productImages = await this.productImagesRepository.save({
+      if (fish.productImages && fish.productImages.length > 0) {
+        const productImages = fish.productImages.map((image) => ({
           create_fish_id: createdFish.id,
-          image: fish.images[i],
+          image,
           deleteFlag: false,
-        });
-        createdFish.productImages.push(productImages);
+        }));
+        const savedImages =
+          await this.productImagesRepository.save(productImages);
+        createdFish.productImages = savedImages;
       }
       await this.fishRepository.save(createdFish);
       if (createdFish) {
@@ -45,6 +49,7 @@ export class FishService {
   async getAllFish() {
     try {
       const fish = await this.fishRepository.find({
+        select: ['id', 'name', 'price', 'description', 'categoryId'],
         where: { deleteFlag: false },
         relations: ['productImages'],
       });
@@ -74,7 +79,7 @@ export class FishService {
     }
   }
 
-  async updateFish(id: number, fish: CreateFishDto) {
+  async updateFish(id: number, fish: UpdateFishDto) {
     try {
       const updatedFish = await this.fishRepository.save({
         id,
@@ -91,17 +96,17 @@ export class FishService {
           );
         }
       }
-      updatedFish.productImages = [];
-      if (fish.images) {
-        for (let i = 0; i < fish.images.length; i++) {
-          const productImages = await this.productImagesRepository.save({
-            create_fish_id: id,
-            image: fish.images[i],
-            deleteFlag: false,
-          });
-          updatedFish.productImages.push(productImages);
-        }
+      if (fish.productImages && fish.productImages.length > 0) {
+        const productImages = fish.productImages.map((image) => ({
+          create_fish_id: id,
+          image,
+          deleteFlag: false,
+        }));
+        const savedImages =
+          await this.productImagesRepository.save(productImages);
+        updatedFish.productImages = savedImages;
       }
+      await this.fishRepository.save(updatedFish);
       if (updatedFish) {
         return successResponse(updatedFish, 'Fish updated successfully', 200);
       }
@@ -125,11 +130,8 @@ export class FishService {
 
       // Delete associated product images first
       if (fishToDelete.productImages.length > 0) {
-        for (let i = 0; i < fishToDelete.productImages.length; i++) {
-          await this.productImagesRepository.delete(
-            fishToDelete.productImages[i].id,
-          );
-        }
+        const imageIds = fishToDelete.productImages.map((img) => img.id);
+        await this.productImagesRepository.delete(imageIds);
       }
 
       // Now delete the fish

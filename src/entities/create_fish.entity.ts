@@ -1,12 +1,13 @@
-// create fish
 import {
   Column,
   Entity,
   PrimaryGeneratedColumn,
   OneToMany,
   JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { ProductImages } from './product_images.entity';
+import { Category } from './category.entity';
 
 @Entity()
 export class CreateFish {
@@ -22,10 +23,20 @@ export class CreateFish {
   @Column()
   description: string;
 
-  @OneToMany(() => ProductImages, (productImages) => productImages.createFish)
-  @JoinColumn({ name: 'create_fish_id' })
+  @OneToMany(() => ProductImages, (productImages) => productImages.createFish, {
+    cascade: true,
+  })
   productImages: ProductImages[];
 
   @Column()
   deleteFlag: boolean;
+
+  @ManyToOne(() => Category, (category) => category.fishes, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'categoryId' })
+  category: Category;
+
+  @Column({ nullable: true })
+  categoryId: string;
 }

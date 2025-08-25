@@ -1,5 +1,5 @@
 //
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateFishDto {
@@ -25,5 +25,9 @@ export class CreateFishDto {
   @ApiProperty({
     example: ['url1', 'url2'],
   })
-  images: string[];
+  productImages: string[];
+
+  @IsUUID()
+  @IsNotEmpty()
+  categoryId: string;
 }

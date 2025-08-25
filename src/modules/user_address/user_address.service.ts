@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserAddressDto } from './dto/create_user_address.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserAddress } from '../entities/user_address_entity';
+import { UserAddress } from 'src/entities/user_address_entity';
 import { errorResponse, successResponse } from 'src/common/responses';
 
 @Injectable()
