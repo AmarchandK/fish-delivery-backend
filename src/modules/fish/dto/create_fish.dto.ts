@@ -28,6 +28,10 @@ export class CreateFishDto {
   productImages: string[];
 
   @IsUUID()
+  @ApiProperty({
+    description: 'Category ID',
+    example: 'uuid',
+  })
   @IsNotEmpty()
   categoryId: string;
 }
