@@ -28,7 +28,7 @@ export class UserAddress {
   @Column()
   pincode: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 15 })
   mobile: string;
 
   @ManyToOne(() => User, (user) => user.addresses)
