@@ -4,15 +4,26 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserAddress } from 'src/entities/user_address_entity';
 import { errorResponse, successResponse } from 'src/common/responses';
+import { User } from 'src/entities/user.entity';
 
 @Injectable()
 export class UserAddressService {
   constructor(
     @InjectRepository(UserAddress)
     private readonly userAddressRepository: Repository<UserAddress>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
   async createUserAddress(userAddress: CreateUserAddressDto) {
     try {
+      // First, check if the user exists
+      const user = await this.userRepository.findOne({
+        where: { id: Number(userAddress.user_id) },
+      });
+      if (!user) {
+        return errorResponse(null, 'User not found', 404);
+      }
+
       const createdUserAddress = await this.userAddressRepository.save({
         address: userAddress.address,
         city: userAddress.city,

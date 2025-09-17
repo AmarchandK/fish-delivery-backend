@@ -3,9 +3,10 @@ import UserAddressController from './user_address.controller';
 import { UserAddressService } from './user_address.service';
 import { UserAddress } from 'src/entities/user_address_entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from 'src/entities/user.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserAddress])],
+  imports: [TypeOrmModule.forFeature([UserAddress, User])],
   controllers: [UserAddressController],
   providers: [UserAddressService],
 })
