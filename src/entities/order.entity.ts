@@ -36,24 +36,24 @@ export class Order {
   id: string;
 
   @Column({ unique: true })
-  orderNumber: string;
+  order_number: string;
 
   @ManyToOne(() => User, (user) => user.orders)
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @Column()
-  userId: string;
+  user_id: string;
 
   @OneToMany(() => OrderItem, (item) => item.order, { cascade: true })
   items: OrderItem[];
 
   @ManyToOne(() => UserAddress, { nullable: true })
-  @JoinColumn({ name: 'shippingAddressId' })
-  shippingAddress: UserAddress;
+  @JoinColumn({ name: 'shipping_address_id' })
+  shipping_address: UserAddress;
 
-  @Column({ nullable: true })
-  shippingAddressId: number;
+  @Column()
+  shipping_address_id: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
   subtotal: number;
@@ -62,7 +62,7 @@ export class Order {
   tax: number;
 
   @Column('decimal', { precision: 10, scale: 2, default: 0 })
-  shippingCharge: number;
+  shipping_charge: number;
 
   @Column('decimal', { precision: 10, scale: 2 })
   total: number;
@@ -71,41 +71,41 @@ export class Order {
   status: OrderStatus;
 
   @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
-  paymentStatus: PaymentStatus;
+  payment_status: PaymentStatus;
 
-  @Column({ nullable: true })
-  paymentId: string;
+  @Column()
+  payment_id: string;
 
-  @Column({ nullable: true })
-  paymentMethod: string;
+  @Column()
+  payment_method: string;
 
-  @Column({ nullable: true })
-  transactionId: string;
+  @Column()
+  transaction_id: string;
 
   @Column({ type: 'text', nullable: true })
   notes: string;
 
-  @Column({ type: 'timestamp', nullable: true })
-  deliveredAt: Date;
+  @Column({ type: 'timestamp'})
+  delivered_at: Date;
 
   @Column({ type: 'timestamp', nullable: true })
-  cancelledAt: Date;
+  cancelled_at: Date;
 
   @Column({ type: 'text', nullable: true })
-  cancellationReason: string;
+  cancellation_reason: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  created_at: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updated_at: Date;
 
   @Column({ default: false })
-  isDeleted: boolean;
+  is_deleted: boolean;
 
   // Helper method to generate order number
   generateOrderNumber(): void {
-    this.orderNumber = `ORD-${Date.now()}-${Math.floor(
+    this.order_number = `ORD-${Date.now()}-${Math.floor(
       Math.random() * 1000,
     ).toString()}`;
   }

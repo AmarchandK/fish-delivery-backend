@@ -8,9 +8,10 @@ import {
   Delete,
   ParseUUIDPipe,
   ParseIntPipe,
+  Patch,
 } from '@nestjs/common';
 import { FishService } from './fish.service';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { UpdateFishDto } from './dto/update-fish.dto';
 import { CreateFishDto } from './dto/create_fish.dto';
 import { CreateFish } from 'src/entities/create_fish.entity';
@@ -54,8 +55,9 @@ export class FishController {
     return this.fishService.getFishById(id);
   }
 
-  @Put(':id')
+  @Patch(':id')
   @ApiOperation({ summary: 'Update a fish' })
+  @ApiBody({ type: CreateFishDto })
   @ApiResponse({
     status: 200,
     description: 'The fish has been successfully updated.',
@@ -78,5 +80,17 @@ export class FishController {
   @ApiResponse({ status: 404, description: 'Fish not found.' })
   async remove(@Param('id', ParseIntPipe) id: number) {
     return this.fishService.deleteFish(id);
+  }
+
+  @Get('category/:categoryId')
+  @ApiOperation({ summary: 'Get fishes by category ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return fishes by category ID.',
+    type: [CreateFish],
+  })
+  @ApiResponse({ status: 404, description: 'Category not found.' })
+  async findByCategory(@Param('categoryId') categoryId: string) {
+    return this.fishService.getFishByCategory(categoryId);
   }
 }

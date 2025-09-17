@@ -17,7 +17,7 @@ export class User {
   name: string;
 
   @Column({ unique: true })
-  firebaseUid: string;
+  firebase_uid: string;
 
   @Column({ type: 'varchar', length: 15, unique: true })
   phone: string;
@@ -30,10 +30,10 @@ export class User {
   role: UserRole;
 
   @Column({ default: false })
-  isLoggedIn: boolean;
+  is_logged_in: boolean;
 
   @Column({ default: false })
-  deleteFlag: boolean;
+  delete_flag: boolean;
 
   @OneToMany(() => UserAddress, (userAddress) => userAddress.user)
   addresses: UserAddress[];

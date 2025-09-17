@@ -22,22 +22,32 @@ export class FishService {
         name: fish.name,
         price: fish.price,
         description: fish.description,
-        deleteFlag: false,
-        categoryId: fish.categoryId,
+        delete_flag: false,
+        category_id: fish.categoryId,
       });
       if (fish.productImages && fish.productImages.length > 0) {
         const productImages = fish.productImages.map((image) => ({
           create_fish_id: createdFish.id,
           image,
-          deleteFlag: false,
+          delete_flag: false,
         }));
         const savedImages =
           await this.productImagesRepository.save(productImages);
-        createdFish.productImages = savedImages;
+        createdFish.product_images = savedImages;
       }
       await this.fishRepository.save(createdFish);
       if (createdFish) {
-        return successResponse(createdFish, 'Fish created successfully', 201);
+        const res = {
+          id: createdFish.id,
+          name: createdFish.name,
+          price: createdFish.price,
+          description: createdFish.description,
+          product_images: createdFish.product_images.map(
+            (image) => image.image,
+          ),
+          category_id: createdFish.category_id,
+        };
+        return successResponse(res, 'Fish created successfully', 201);
       }
       return errorResponse(createdFish, 'Fish not created', 400);
     } catch (error) {
@@ -48,13 +58,33 @@ export class FishService {
 
   async getAllFish() {
     try {
-      const fish = await this.fishRepository.find({
-        select: ['id', 'name', 'price', 'description', 'categoryId'],
-        where: { deleteFlag: false },
-        relations: ['productImages'],
-      });
+      const fish = await this.fishRepository
+        .createQueryBuilder('fish')
+        .select([
+          'fish.id',
+          'fish.name',
+          'fish.price',
+          'fish.description',
+          'fish.category_id',
+          'fish.category',
+        ])
+        .where('fish.delete_flag = :delete_flag', { delete_flag: false })
+        .leftJoinAndSelect('fish.product_images', 'product_images')
+        .leftJoinAndSelect('fish.category', 'category')
+        .getMany();
       if (fish) {
-        return successResponse(fish, 'Fish fetched successfully', 200);
+        const res = fish.map((fish) => {
+          return {
+            id: fish.id,
+            name: fish.name,
+            price: fish.price,
+            description: fish.description,
+            product_images: fish.product_images.map((image) => image.image),
+            category_id: fish.category_id,
+            category_name: fish.category.name,
+          };
+        });
+        return successResponse(res, 'Fish fetched successfully', 200);
       }
       return errorResponse(fish, 'Fish not found', 404);
     } catch (error) {
@@ -65,12 +95,32 @@ export class FishService {
 
   async getFishById(id: number) {
     try {
-      const fish = await this.fishRepository.findOne({
-        where: { id, deleteFlag: false },
-        relations: ['productImages'],
-      });
+      const fish = await this.fishRepository
+        .createQueryBuilder('fish')
+        .select([
+          'fish.id',
+          'fish.name',
+          'fish.price',
+          'fish.description',
+          'fish.category_id',
+          'category',
+        ])
+        .where('fish.id = :id', { id })
+        .andWhere('fish.delete_flag = :delete_flag', { delete_flag: false })
+        .leftJoinAndSelect('fish.product_images', 'product_images')
+        .leftJoinAndSelect('fish.category', 'category')
+        .getOne();
       if (fish) {
-        return successResponse(fish, 'Fish fetched successfully', 200);
+        const res = {
+          id: fish.id,
+          name: fish.name,
+          price: fish.price,
+          description: fish.description,
+          product_images: fish.product_images.map((image) => image.image),
+          category_id: fish.category_id,
+          category_name: fish.category.name,
+        };
+        return successResponse(res, 'Fish fetched successfully', 200);
       }
       return errorResponse(fish, 'Fish not found', 404);
     } catch (error) {
@@ -79,36 +129,53 @@ export class FishService {
     }
   }
 
-  async updateFish(id: number, fish: UpdateFishDto) {
+  async updateFish(id: number, fishDto: UpdateFishDto) {
     try {
-      const updatedFish = await this.fishRepository.save({
-        id,
-        name: fish.name,
-        price: fish.price,
-        description: fish.description,
-        deleteFlag: false,
+      const updatedFish = await this.fishRepository.findOne({
+        where: { id, delete_flag: false },
+        relations: ['product_images', 'category'],
+      });
+      if (!updatedFish) {
+        return errorResponse(null, 'Fish not found', 404);
+      }
+      await this.fishRepository.update(id, {
+        name: fishDto.name,
+        price: fishDto.price,
+        description: fishDto.description,
+        delete_flag: false,
       });
       // check images update if its same
-      if (updatedFish.productImages.length > 0) {
-        for (let i = 0; i < updatedFish.productImages.length; i++) {
+      if (updatedFish.product_images.length > 0) {
+        for (let i = 0; i < updatedFish.product_images.length; i++) {
           await this.productImagesRepository.delete(
-            updatedFish.productImages[i].id,
+            updatedFish.product_images[i].id,
           );
         }
       }
-      if (fish.productImages && fish.productImages.length > 0) {
-        const productImages = fish.productImages.map((image) => ({
+      if (fishDto.productImages && fishDto.productImages.length > 0) {
+        const productImages = fishDto.productImages.map((image) => ({
           create_fish_id: id,
           image,
-          deleteFlag: false,
+          delete_flag: false,
         }));
         const savedImages =
           await this.productImagesRepository.save(productImages);
-        updatedFish.productImages = savedImages;
+        updatedFish.product_images = savedImages;
       }
       await this.fishRepository.save(updatedFish);
       if (updatedFish) {
-        return successResponse(updatedFish, 'Fish updated successfully', 200);
+        const res = {
+          id: updatedFish.id,
+          name: updatedFish.name,
+          price: updatedFish.price,
+          description: updatedFish.description,
+          product_images: updatedFish.product_images.map(
+            (image) => image.image,
+          ),
+          category_id: updatedFish.category_id,
+          category_name: updatedFish.category.name,
+        };
+        return successResponse(res, 'Fish updated successfully', 200);
       }
       return errorResponse(updatedFish, 'Fish not found', 404);
     } catch (error) {
@@ -121,26 +188,63 @@ export class FishService {
     try {
       const fishToDelete = await this.fishRepository.findOne({
         where: { id },
-        relations: ['productImages'],
+        relations: ['product_images'],
       });
 
       if (!fishToDelete) {
-        throw new Error('Fish not found');
+        return errorResponse(null, 'Fish not found', 404);
       }
 
       // Delete associated product images first
-      if (fishToDelete.productImages.length > 0) {
-        const imageIds = fishToDelete.productImages.map((img) => img.id);
+      if (fishToDelete.product_images.length > 0) {
+        const imageIds = fishToDelete.product_images.map((img) => img.id);
         await this.productImagesRepository.delete(imageIds);
       }
 
       // Now delete the fish
       await this.fishRepository.delete(id);
 
-      return successResponse(fishToDelete, 'Fish deleted successfully', 200);
+      return successResponse(null, 'Fish deleted successfully', 200);
     } catch (error) {
       console.error('Error deleting fish', error);
       return errorResponse(error, 'Error deleting fish', 500);
+    }
+  }
+
+  async getFishByCategory(categoryId: string) {
+    try {
+      const fish = await this.fishRepository.find({
+        select: [
+          'id',
+          'name',
+          'price',
+          'description',
+          'category_id',
+          'category',
+        ],
+        where: { category_id: categoryId, delete_flag: false },
+        relations: ['product_images', 'category'],
+      });
+
+      if (!fish || fish.length == 0) {
+        return errorResponse(fish, 'Fishes not found', 404);
+      }
+
+      const res = fish.map((fish) => {
+        return {
+          id: fish.id,
+          name: fish.name,
+          price: fish.price,
+          description: fish.description,
+          product_images: fish.product_images.map((image) => image.image),
+          category_id: fish.category_id,
+          category_name: fish.category.name,
+        };
+      });
+      return successResponse(res, 'Fishes fetched successfully', 200);
+    } catch (error) {
+      console.error('Error getting fish by category', error);
+      return errorResponse(error, 'Error getting fish by category', 500);
     }
   }
 }

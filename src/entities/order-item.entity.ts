@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Order } from './order.entity';
 import { CreateFish } from './create_fish.entity';
 
@@ -8,18 +14,18 @@ export class OrderItem {
   id: number;
 
   @ManyToOne(() => Order, (order) => order.items, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'orderId' })
+  @JoinColumn({ name: 'order_id' })
   order: Order;
 
   @Column()
-  orderId: string;
+  order_id: string;
 
   @ManyToOne(() => CreateFish)
-  @JoinColumn({ name: 'fishId' })
+  @JoinColumn({ name: 'fish_id' })
   fish: CreateFish;
 
   @Column()
-  fishId: number;
+  fish_id: number;
 
   @Column('int')
   quantity: number;
@@ -27,10 +33,10 @@ export class OrderItem {
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
 
-  @Column({ nullable: true })
+  @Column()
   name: string;
 
-  @Column('text', { nullable: true })
+  @Column('text')
   image: string;
 
   @Column('decimal', { precision: 10, scale: 2 })

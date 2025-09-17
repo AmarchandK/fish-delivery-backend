@@ -23,20 +23,24 @@ export class CreateFish {
   @Column()
   description: string;
 
-  @OneToMany(() => ProductImages, (productImages) => productImages.createFish, {
-    cascade: true,
-  })
-  productImages: ProductImages[];
+  @OneToMany(
+    () => ProductImages,
+    (productImages) => productImages.create_fish,
+    {
+      cascade: true,
+    },
+  )
+  product_images: ProductImages[];
 
-  @Column()
-  deleteFlag: boolean;
+  @Column({ default: false })
+  delete_flag: boolean;
 
   @ManyToOne(() => Category, (category) => category.fishes, {
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'categoryId' })
+  @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  @Column({ nullable: true })
-  categoryId: string;
+  @Column()
+  category_id: string;
 }

@@ -20,14 +20,17 @@ export class Category {
   description: string;
 
   @Column({ default: true })
-  isActive: boolean;
+  is_active: boolean;
 
   @OneToMany(() => CreateFish, (fish) => fish.category)
   fishes: CreateFish[];
 
   @CreateDateColumn()
-  createdAt: Date;
+  created_at: Date;
 
   @UpdateDateColumn({})
-  updatedAt: Date;
+  updated_at: Date;
+
+  @Column({ default: false })
+  delete_flag: boolean;
 }

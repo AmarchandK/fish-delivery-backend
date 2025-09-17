@@ -16,10 +16,10 @@ export class UserService {
     try {
       const createdUser = await this.userRepository.save({
         name: user.name,
-        firebaseUid: user.firebaseUid,
+        firebase_uid: user.firebaseUid,
         phone: user.phone,
-        isLoggedIn: true,
-        deleteFlag: false,
+        is_logged_in: true,
+        delete_flag: false,
       });
       return successResponse(createdUser, 'User created successfully', 201);
     } catch (error) {
@@ -31,7 +31,7 @@ export class UserService {
   async getUser(firebaseUid: string) {
     try {
       const user = await this.userRepository.findOne({
-        where: { firebaseUid, deleteFlag: false },
+        where: { firebase_uid: firebaseUid, delete_flag: false },
       });
       if (!user) {
         return errorResponse(user, 'User not found', 404);
@@ -46,7 +46,7 @@ export class UserService {
   async updateUser(firebaseUid: string, user: CreateUserDto) {
     try {
       const updatedUser = await this.userRepository.update(
-        { firebaseUid, deleteFlag: false },
+        { firebase_uid: firebaseUid, delete_flag: false },
         user,
       );
       if (updatedUser) {
@@ -62,8 +62,8 @@ export class UserService {
   async logoutUser(firebaseUid: string) {
     try {
       const updatedUser = await this.userRepository.update(
-        { firebaseUid, deleteFlag: false },
-        { isLoggedIn: false },
+        { firebase_uid: firebaseUid, delete_flag: false },
+        { is_logged_in: false },
       );
       if (updatedUser) {
         return successResponse(

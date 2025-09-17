@@ -11,11 +11,11 @@ export class ProductImages {
   image: string;
 
   @Column()
-  deleteFlag: boolean;
+  delete_flag: boolean;
 
-  @ManyToOne(() => CreateFish, (createFish) => createFish.productImages, { onDelete: 'CASCADE' })
+  @ManyToOne(() => CreateFish, (createFish) => createFish.product_images, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'create_fish_id' })
-  createFish: CreateFish;
+  create_fish: CreateFish;
 
   @Column()
   create_fish_id: number;

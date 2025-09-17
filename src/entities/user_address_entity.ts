@@ -39,5 +39,5 @@ export class UserAddress {
   user_id: string;
 
   @Column({ default: false })
-  deleteFlag: boolean;
+  delete_flag: boolean;
 }

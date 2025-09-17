@@ -77,7 +77,7 @@ export class OrderService {
         orderItem.price = fish.price;
         orderItem.total = itemTotal;
         orderItem.name = fish.name;
-        orderItem.image = fish.productImages?.[0]?.image || ''; // Ensure image is a string
+        orderItem.image = fish.product_images?.[0]?.image || ''; // Ensure image is a string
 
         orderItems.push(orderItem);
       }
@@ -89,16 +89,16 @@ export class OrderService {
 
       // Create order
       const order = this.orderRepository.create({
-        user: { id: userId },
-        shippingAddress: { id: createOrderDto.shippingAddressId },
+        user_id: userId.toString(),
+        shipping_address_id: createOrderDto.shippingAddressId,
         subtotal,
         tax,
-        shippingCharge,
+        shipping_charge: shippingCharge,
         total,
-        paymentMethod: createOrderDto.paymentMethod || 'COD',
+        payment_method: createOrderDto.paymentMethod || 'COD',
         notes: createOrderDto.notes,
         status: OrderStatus.PENDING,
-        paymentStatus: PaymentStatus.PENDING,
+        payment_status: PaymentStatus.PENDING,
       });
 
       order.generateOrderNumber();
@@ -107,7 +107,10 @@ export class OrderService {
       // Save order items with order ID
       const savedItems = await Promise.all(
         orderItems.map((item) =>
-          queryRunner.manager.save(OrderItem, { ...item, order: savedOrder }),
+          queryRunner.manager.save(OrderItem, {
+            ...item,
+            order_id: savedOrder[0].id,
+          }),
         ),
       );
 
@@ -115,7 +118,7 @@ export class OrderService {
 
       // Fetch the complete order with relations
       const completeOrder = await this.orderRepository.findOne({
-        where: { id: savedOrder.id },
+        where: { id: savedOrder[0].id },
         relations: ['items', 'shippingAddress'],
       });
 
@@ -136,7 +139,7 @@ export class OrderService {
   async getOrderById(id: string, userId: string) {
     try {
       const order = await this.orderRepository.findOne({
-        where: { id, userId },
+        where: { id, user_id: userId.toString() },
         relations: ['items', 'shippingAddress'],
       });
 
@@ -156,7 +159,7 @@ export class OrderService {
       const orders = await this.orderRepository.find({
         where: { user: { id: userId } },
         relations: ['items'],
-        order: { createdAt: 'DESC' },
+        order: { created_at: 'DESC' },
       });
 
       return successResponse(orders, 'Orders fetched successfully', 200);
@@ -193,27 +196,27 @@ export class OrderService {
 
         // Update timestamps based on status
         if (updateOrderDto.status === OrderStatus.DELIVERED) {
-          order.deliveredAt = new Date();
+          order.delivered_at = new Date();
         } else if (updateOrderDto.status === OrderStatus.CANCELLED) {
-          order.cancelledAt = new Date();
-          order.cancellationReason = updateOrderDto.cancellationReason ?? '';
+          order.cancelled_at = new Date();
+          order.cancellation_reason = updateOrderDto.cancellationReason ?? '';
         }
       }
 
       if (updateOrderDto.paymentStatus) {
-        order.paymentStatus = updateOrderDto.paymentStatus;
+        order.payment_status = updateOrderDto.paymentStatus;
       }
 
       if (updateOrderDto.paymentId) {
-        order.paymentId = updateOrderDto.paymentId;
+        order.payment_id = updateOrderDto.paymentId;
       }
 
       if (updateOrderDto.transactionId) {
-        order.transactionId = updateOrderDto.transactionId;
+        order.transaction_id = updateOrderDto.transactionId;
       }
 
       if (updateOrderDto.cancellationReason) {
-        order.cancellationReason = updateOrderDto.cancellationReason;
+        order.cancellation_reason = updateOrderDto.cancellationReason;
       }
 
       const updatedOrder = await queryRunner.manager.save(Order, order);
@@ -262,9 +265,9 @@ export class OrderService {
       const result = await this.updateOrder(orderId, {
         status: OrderStatus.CANCELLED,
         cancellationReason: reason,
-        paymentStatus: this.shouldRefund(order.paymentStatus)
+        paymentStatus: this.shouldRefund(order.payment_status)
           ? PaymentStatus.REFUNDED
-          : order.paymentStatus,
+          : order.payment_status,
       });
 
       return result;
@@ -277,9 +280,9 @@ export class OrderService {
   async getOrderHistory(userId: string) {
     try {
       const orders = await this.orderRepository.find({
-        where: { userId },
+        where: { user_id: userId },
         relations: ['items', 'shippingAddress'],
-        order: { createdAt: 'DESC' },
+        order: { created_at: 'DESC' },
       });
 
       return successResponse(orders, 'Order history fetched successfully', 200);

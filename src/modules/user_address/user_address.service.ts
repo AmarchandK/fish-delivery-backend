@@ -46,7 +46,7 @@ export class UserAddressService {
   async getUserAddress(user_id: string) {
     try {
       const userAddress = await this.userAddressRepository.find({
-        where: { user_id, deleteFlag: false },
+        where: { user_id, delete_flag: false },
       });
       if (userAddress.length > 0) {
         return successResponse(
