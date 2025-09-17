@@ -5,9 +5,7 @@ import { OrderModule } from './modules/order/order.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
 import { UserAddressModule } from './modules/user_address/user_address.module';
-
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -17,12 +15,17 @@ import { UserAddressModule } from './modules/user_address/user_address.module';
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
+      database: process.env.DB_DATABASE,
       autoLoadEntities: true,
-      synchronize: true, // Use only in dev!
-    }),
-    JwtModule.register({
-      secret: process.env.JWT_BASE_SECRET,
+      synchronize: true,
+      extra: {
+        max: 10,
+        min: 2,
+        acquire: 30000,
+        idle: 10000,
+        connectionTimeoutMillis: 30000,
+        idleTimeoutMillis: 30000,
+      },
     }),
     AuthModule,
     FishModule,
