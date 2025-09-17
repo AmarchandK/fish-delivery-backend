@@ -28,7 +28,7 @@ export function errorResponse(
     statusCode,
     success: false,
     message,
-    error: error.message,
+    error: error?.message ?? 'Error',
   };
 }
 

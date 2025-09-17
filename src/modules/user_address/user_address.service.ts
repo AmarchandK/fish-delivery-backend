@@ -16,7 +16,6 @@ export class UserAddressService {
   ) {}
   async createUserAddress(userAddress: CreateUserAddressDto) {
     try {
-      // First, check if the user exists
       const user = await this.userRepository.findOne({
         where: { id: Number(userAddress.user_id) },
       });
